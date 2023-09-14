@@ -114,7 +114,6 @@ def text_preprocess1(doc):
     wnl = WordNetLemmatizer() # define a lemmatizing method       
     doc = [wnl.lemmatize(t[0], t[1]) for t in doc] # lemmatize
     doc = ' '.join([str(elem) for elem in doc]) # convert back to string
-    #doc = re.sub(r'\s+', ' ', doc)
     return doc
 
 # Function to preprocess mesh and article type
