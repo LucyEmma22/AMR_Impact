@@ -3,24 +3,21 @@
 
 import pandas as pd
 import os
-
-###############################################################################################################
+os.chdir("/Users/s1995754/Library/CloudStorage/OneDrive-UniversityofEdinburgh/PhD Year 3/AMR Impact")
 
 # Read pmid list  
-with open(r'pmid_list.txt', 'r') as pmid:
+with open(r'1_Data_Retrieval/pmid_list2.txt', 'r') as pmid:
     pmid_list = [line.strip() for line in pmid]
 
-# Split PMID list into sublists <25000 in length and save in a folder called Altmetric Lists
 max_length = 25000
 for i in range(0, len(pmid_list), max_length):
     sublist = pmid_list[i:i + max_length]
-    with open(f'Altmetric_Lists/altmetric_list_{i}.txt', 'w') as fp:
+    with open(f'1_Data_Retrieval/Altmetric_Lists/altmetric_list_{i}.txt', 'w') as fp:
         fp.write('\n'.join(sublist))
+
         
 ## SEARCH EACH LIST IN THE ALTMETRIC DATABASE AND DOWNLOAD UTF-8 CSV (Command-A (⌘A) selects entire list)
-
-# Merge search results into one dataframe
-folder_path = 'Altmetric_Lists'
+folder_path = '1_Data_Retrieval/Altmetric_Lists'
 file_list = os.listdir(folder_path)
 altmetric_data = pd.DataFrame()
 for file in file_list:
@@ -30,5 +27,6 @@ for file in file_list:
         print(len(df))
         altmetric_data = pd.concat([altmetric_data, df], ignore_index=True)
 
-# Save altmetric data as .csv
-altmetric_data.to_csv('altmetric_data.csv', index=False)
+altmetric_data.to_csv('1_Data_Retrieval/altmetric_data2.csv', index=False)
+
+# Search for altmetric_data2.csv was completed on 14/09/23
