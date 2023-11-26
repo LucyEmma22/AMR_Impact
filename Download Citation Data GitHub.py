@@ -5,13 +5,15 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import time
+import os
+os.chdir("/Users/s1995754/Library/CloudStorage/OneDrive-UniversityofEdinburgh/PhD Year 3/AMR Impact")
 
 ########################################################################################################
 
 def get_citations(PMID):
-    email = enter_email_address_here
-    tool = enter_tool_name_here
-    api_key = enter_api_key_here
+    email = 'enter_email_here'
+    tool = 'lbsearch'
+    api_key = 'enter_api_key_here'
     base_url_eLink = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=pubmed&linkname=pubmed_pubmed_citedin&id='
     parameters = f'&email={email}&tool={tool}&api_key={api_key}'
     url = f'{base_url_eLink}{"".join(PMID)}{parameters}'
@@ -25,10 +27,11 @@ def get_citations(PMID):
     for link in content.find_all('Link'):
         citation = get_text(link.find("Id"))
         citations.append(citation)
+    
     return [PMID, citations, len(citations)]
 
 # Read pmid list  
-with open(r'pmid_list.txt', 'r') as pmid:
+with open(r'1_Data_Retrieval/pmid_list2.txt', 'r') as pmid:
     pmid_list = [line.strip() for line in pmid]
 
 # Loop through PMID list 
@@ -49,7 +52,8 @@ for PMID in pmid_list:
             print("pause 5 sec")
             citations = get_citations(PMID)
             citation_data.append(citations)  
-
-# Save citation data as .csv file
+            
 citation_data_pd = pd.DataFrame(citation_data, columns = ['PMID', 'citations', 'number_citations'])
-citation_data_pd.to_csv("citation_data.csv", index=False)
+citation_data_pd.to_csv("1_Data_Retrieval/citation_data2.csv", index=False)
+
+# Search for citation_data2.csv was completed on 14/09/23
