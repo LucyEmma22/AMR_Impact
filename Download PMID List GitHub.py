@@ -4,16 +4,19 @@
 from itertools import chain
 import requests
 import json
+import os
+os.chdir("/Users/s1995754/Library/CloudStorage/OneDrive-UniversityofEdinburgh/PhD Year 3/AMR Impact")
+
+# Parameters
+email = 'enter_email_key_here'
+tool = 'lbsearch'
+api_key = 'enter_api_key_here'
+base_url_eSearch = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term='
+parameters = '&retstart=0&retmax=9999&retmode=json&email=' + email + '&tool=' + tool + '&api_key=' + api_key #+ '&usehistory=y'
 
 ##############################################################################
-# Search Term, Filters and Parameters
+# Search Term and Filters
 
-email = enter_email_address_here
-tool = enter_tool_name_here
-api_key = enter_api_key_here
-
-base_url_eSearch = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term='
-parameters = '&retstart=0&retmax=9999&retmode=json&email=' + email + '&tool=' + tool + '&api_key=' + api_key 
 search_term = 'drug resistance, microbial[MeSH Terms]'
 date_range = '"1940/01/01"[Date - MeSH] : "2023/09/01"[Date - MeSH]'
 filters =  'fha[Filter] AND english[Filter]' # fha gets only papers with an abstract
@@ -26,7 +29,7 @@ pmid_search_results = requests.get(base_url_eSearch + search_term + ' AND ' + da
 pmid_search_results = json.loads(pmid_search_results.text)
 total_result_count = int(pmid_search_results['esearchresult']['count']) 
 
-# Loop though year of publication to get list of PMIDs using eSearch
+# Loop though year of publication to get list of PMIDs using eSearch 
 nested_pmid_list = []
 year = 1940
 while year <= 2023:
@@ -39,8 +42,10 @@ pmid_list = list(set(list(chain.from_iterable(nested_pmid_list))))
 print(len(pmid_list))
 
 # Write pmid list to .txt file
-with open(r'pmid_list.txt', 'w') as fp:
+with open(r'1_Data_Retrieval/pmid_list2.txt', 'w') as fp:
     fp.write('\n'.join(pmid_list))
+    
+# Search for pmid_list2.txt was done on 12/09/23, length=130906
 
 ##############################################################################
 # Microbial resistance without filters
@@ -67,5 +72,7 @@ amr_citations = list(set(list(chain.from_iterable(nested_pmid_list))))
 print(len(amr_citations))
 
 # Write pmid list to .txt file
-with open(r'amr_citations_list.txt', 'w') as fp:
+with open(r'1_Data_Retrieval/amr_citations_list.txt', 'w') as fp:
     fp.write('\n'.join(amr_citations))
+
+# Search for amr_citations_list.txt was done on 12/09/23, length=183494
