@@ -10,6 +10,7 @@ import matplotlib.colors as colors
 from wordcloud import WordCloud
 import ast
 from scipy import stats
+from scipy.stats import linregress
 import os
 os.chdir("/Users/s1995754/Library/CloudStorage/OneDrive-UniversityofEdinburgh/PhD Year 3/AMR Impact")
 
@@ -76,14 +77,13 @@ def uniqueness_relationship(data, predictor, response, xlab, ylab):
     data2 = data[[response, f'{predictor}_uniqueness_score']].dropna()
     model = np.polyfit(data2[f'{predictor}_uniqueness_score'], data2[response], 1)
     model_predict = np.polyval(model, data2[f'{predictor}_uniqueness_score'])
-    #slope = model[0]
     line_xvals = np.linspace(data2[f'{predictor}_uniqueness_score'].min(), data2[f'{predictor}_uniqueness_score'].max(), 100)
     line_yvals = np.polyval(model, line_xvals)
+    slope, intercept, r_value, p_value, std_err = linregress(data2[f'{predictor}_uniqueness_score'], data2[response])
     
     # Density Plot
     fontsize = 16
-    fig, ax = plt.subplots(figsize=(6, 5))
-    
+    fig, ax = plt.subplots(figsize=(6, 5))   
     plt.hist2d(data2[f'{predictor}_uniqueness_score'], data2[response], bins=bins, cmap='viridis',norm=colors.LogNorm())
     plt.plot(line_xvals, line_yvals, c='red', linewidth = '3')
     plt.xlabel(xlab, fontsize=fontsize)
@@ -107,25 +107,12 @@ def uniqueness_relationship(data, predictor, response, xlab, ylab):
     residuals = np.sqrt(np.abs(model_predict - data2[response])) # Square root of absolute residuals
     model2 = np.polyfit(data2[f'{predictor}_uniqueness_score'], residuals, 1) # Linear regression model for residuals
     model2_predict = np.polyval(model2, data2[f'{predictor}_uniqueness_score'])
-    
+   
     line_xvals = np.linspace(data2[f'{predictor}_uniqueness_score'].min(), data2[f'{predictor}_uniqueness_score'].max(), 100)
     line_yvals = np.polyval(model2, line_xvals)
     
-    # Density Plot
-    fontsize = 16
-    fig, ax = plt.subplots(figsize=(6, 5))
-    
-    plt.hist2d(data2[f'{predictor}_uniqueness_score'], residuals, bins=bins, cmap='viridis',norm=colors.LogNorm())
-    plt.plot(line_xvals, line_yvals, c='red', linewidth = '3')
-    plt.xlabel(xlab, fontsize=fontsize)
-    plt.ylabel(ylab, fontsize=fontsize)
-    plt.colorbar(label='Density')
-    plt.xticks(fontsize=fontsize)
-    plt.yticks(fontsize=fontsize)
-    fig.tight_layout()
-    plt.show()
-    
-    
+    slope_residuals, intercept_residuals, r_value_residuals, p_value_residuals, std_err_residuals = linregress(data2[f'{predictor}_uniqueness_score'], residuals)
+
     # Percentage change in residuals from least to most unique
     data2['model2_predict'] = model2_predict
     least_similar = data2[data2[f'{predictor}_uniqueness_score']==min(data2[f'{predictor}_uniqueness_score'])].reset_index(drop=True)['model2_predict'][0]
@@ -133,12 +120,17 @@ def uniqueness_relationship(data, predictor, response, xlab, ylab):
     percentage_change = ((least_similar - most_similar) / most_similar) * 100
     
     # Result
-    result = pd.DataFrame({'predictor':[predictor], 
-                           'response':[response],
-                           'percentile_least_similar':percentile_least_similar,
-                           'percentile_most_similar':percentile_most_similar,
-                           'change':percentile_least_similar-percentile_most_similar,
-                           'percentage_change':percentage_change})
+    result = pd.DataFrame({
+        'predictor': [predictor],
+        'response': [response],
+        'percentile_least_similar': [percentile_least_similar],
+        'percentile_most_similar': [percentile_most_similar],
+        'change': [percentile_least_similar - percentile_most_similar],
+        'percentage_change': [percentage_change],
+        'p_value_main_model': [p_value],
+        'p_value_residuals_model': [p_value_residuals],
+    })
+
     return result   
   
 ########################################################################################################
@@ -182,7 +174,8 @@ for predictor, xlab in zip(predictor_list1, xlabs):
         max_words_per_line = 1
         wrapped_labels = ['\n'.join(' '.join(label.split()[i:i+max_words_per_line]) for i in range(0, len(label.split()), max_words_per_line)) for label in a]
         plt.bar(wrapped_labels, df[0:10]['mean_response'], color ='blue', width = 0.6, yerr=df[0:10]['SEM_response'], capsize=5, alpha=0.5)
-
+        plt.axhline(y=np.mean(df['mean_response']), color='black', linestyle='--')
+        
         plt.xlabel(xlab, fontsize=fontsize)
         plt.ylabel(ylab,fontsize=fontsize)
         plt.xticks(rotation = 90)
